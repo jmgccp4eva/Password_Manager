@@ -5,10 +5,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.text.method.HideReturnsTransformationMethod;
 import android.text.method.PasswordTransformationMethod;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -37,7 +39,7 @@ public class SignIn extends AppCompatActivity implements View.OnClickListener, V
     private boolean approved = false;
     private static final String PKFN = "infor.pem";
 
-    @SuppressLint("ClickableViewAccessibility")
+    @SuppressLint({"ClickableViewAccessibility", "HardwareIds"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,6 +54,9 @@ public class SignIn extends AppCompatActivity implements View.OnClickListener, V
         btnSI = findViewById(R.id.btnSignIn);
         btnReg = findViewById(R.id.btnSIReg);
         btnFP = findViewById(R.id.btnFP);
+
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+        android_id = Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
 
         btnSI.setOnClickListener(this);
         btnFP.setOnClickListener(this);
@@ -73,6 +78,7 @@ public class SignIn extends AppCompatActivity implements View.OnClickListener, V
                 break;
             case R.id.btnSIReg:
                 Intent intent = new Intent(SignIn.this, Registration.class);
+                intent.putExtra("android_id",android_id);
                 startActivity(intent);
                 break;
         }

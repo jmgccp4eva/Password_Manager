@@ -19,22 +19,26 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="RtlSymmetry" />
+        tools:ignore="RtlSymmetry"
+        android:autofillHints="" />
 
     <EditText
         android:id="@+id/etRegEmail"
-        android:layout_width="250dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginStart="75dp"
         android:layout_marginTop="50dp"
-        android:textSize="20sp"
+        android:layout_marginEnd="75dp"
         android:hint="@string/email"
-        android:textColor="@color/green"
-        android:paddingStart="10sp"
         android:inputType="textEmailAddress"
+        android:paddingStart="10sp"
+        android:textColor="@color/green"
+        android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/etRegName"
-        tools:ignore="RtlSymmetry" />
+        tools:ignore="RtlSymmetry"
+        android:autofillHints="" />
 
     <EditText
         android:id="@+id/etRegPass"
@@ -49,7 +53,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/etRegEmail"
-        tools:ignore="RtlSymmetry" />
+        tools:ignore="RtlSymmetry"
+        android:autofillHints="" />
 
     <EditText
         android:id="@+id/etRegConfPass"
@@ -64,7 +69,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/etRegPass"
-        tools:ignore="RtlSymmetry" />
+        tools:ignore="RtlSymmetry"
+        android:autofillHints="" />
 
     <Button
         android:id="@+id/btnRegister"
@@ -86,7 +92,8 @@
         android:src="@drawable/ic_baseline_visibility_off_24"
         app:layout_constraintBottom_toBottomOf="@+id/etRegPass"
         app:layout_constraintEnd_toEndOf="@+id/etRegPass"
-        app:layout_constraintTop_toTopOf="@+id/etRegPass" />
+        app:layout_constraintTop_toTopOf="@+id/etRegPass"
+        android:contentDescription="@string/password_visible_or_not" />
 
     <ImageButton
         android:id="@+id/ibConfPasswordVis"
@@ -96,6 +103,31 @@
         android:src="@drawable/ic_baseline_visibility_off_24"
         app:layout_constraintBottom_toBottomOf="@+id/etRegConfPass"
         app:layout_constraintEnd_toEndOf="@+id/etRegConfPass"
-        app:layout_constraintTop_toTopOf="@+id/etRegConfPass" />
+        app:layout_constraintTop_toTopOf="@+id/etRegConfPass"
+        android:contentDescription="@string/confirm_password_visible_or_not" />
+
+    <TextView
+        android:id="@+id/tvEmailSent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="75dp"
+        android:layout_marginEnd="75dp"
+        android:text="@string/emailSent"
+        android:textSize="20sp"
+        android:textColor="@color/green"
+        android:textAlignment="center"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ProgressBar
+        android:id="@+id/pbRegBtnPressed"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

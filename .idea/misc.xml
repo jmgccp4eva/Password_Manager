@@ -4,6 +4,7 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/Users/Dharhim/AndroidStudioProjects/Password_Manager/app/src/main/res/drawable/show_password_selector.xml" value="0.2265" />
+        <entry key="..\:/Users/Dharhim/AndroidStudioProjects/Password_Manager/app/src/main/res/layout/activity_not_approved_yet.xml" value="0.1" />
         <entry key="..\:/Users/Dharhim/AndroidStudioProjects/Password_Manager/app/src/main/res/layout/activity_register.xml" value="0.1265625" />
         <entry key="..\:/Users/Dharhim/AndroidStudioProjects/Password_Manager/app/src/main/res/layout/activity_registration.xml" value="0.264" />
         <entry key="..\:/Users/Dharhim/AndroidStudioProjects/Password_Manager/app/src/main/res/layout/activity_signin.xml" value="0.4" />

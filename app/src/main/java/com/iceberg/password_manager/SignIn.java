@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.text.method.HideReturnsTransformationMethod;
@@ -23,11 +24,15 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.Blob;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.util.HashMap;
+import java.util.Map;
 
 public class SignIn extends AppCompatActivity implements View.OnClickListener, View.OnTouchListener {
 
@@ -73,6 +78,11 @@ public class SignIn extends AppCompatActivity implements View.OnClickListener, V
 
         etPass.setOnTouchListener(this);
 
+        if(fileExists(PKFN)){
+            Toast.makeText(getApplicationContext(),"Exists",Toast.LENGTH_LONG).show();
+        }else{
+            Toast.makeText(getApplicationContext(),"DOES NOT EXIST",Toast.LENGTH_LONG).show();
+        }
     }
 
     public void hideSoftKeyboard(View view) {
@@ -106,7 +116,7 @@ public class SignIn extends AppCompatActivity implements View.OnClickListener, V
             signInUser(email,pass);
         }else if(email.length()<1 && pass.length()>0){
             Toast.makeText(getApplicationContext(),"Email is required",Toast.LENGTH_LONG).show();
-        }else if(email.length()>0 && pass.length()<1){
+        }else if(email.length()>0){
             Toast.makeText(getApplicationContext(),"Password is required",Toast.LENGTH_LONG).show();
         }else{
             Toast.makeText(SignIn.this, "Email and Passward are required", Toast.LENGTH_LONG).show();
@@ -115,38 +125,114 @@ public class SignIn extends AppCompatActivity implements View.OnClickListener, V
 
     private void signInUser(String email, String pass) {
         auth.signInWithEmailAndPassword(email,pass)
-            .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                @Override
-                public void onComplete(@NonNull Task<AuthResult> task) {
-                    if(task.isSuccessful()) {
-                        uid = auth.getCurrentUser().getUid();
-                        FirebaseFirestore.getInstance().collection("users")
-                            .document(uid).collection("devices")
-                            .document(android_id).get()
-                            .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                                @Override
-                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                    if(task.isSuccessful()){
-                                        DocumentSnapshot dss = task.getResult();
-                                        if(dss.exists()){
-                                            if(auth.getCurrentUser().isEmailVerified()){
-                                                Toast.makeText(getApplicationContext(),"Already verified",Toast.LENGTH_LONG).show();
+            .addOnCompleteListener(task -> {
+                if(task.isSuccessful()) {
+                    uid = auth.getCurrentUser().getUid();
+                    FirebaseFirestore.getInstance().collection("users")
+                        .document(uid).collection("devices")
+                        .document(android_id).get()
+                        .addOnCompleteListener(task1 -> {
+                            if(task1.isSuccessful()){
+                                DocumentSnapshot dss = task1.getResult();
+                                if(dss.exists()){
+                                    approved = (boolean) dss.getData().get("approved");
+                                    original = (boolean) dss.getData().get("original");
+                                    if(auth.getCurrentUser().isEmailVerified()){
+                                        if(original){
+                                            if(!approved){
+                                                FirebaseFirestore.getInstance().collection("users")
+                                                        .document(uid).collection("devices")
+                                                        .document(android_id).update("approved",true)
+                                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                            @Override
+                                                            public void onComplete(@NonNull Task<Void> task1) {
+                                                                if(!task1.isSuccessful()){
+                                                                    Toast.makeText(getApplicationContext(),"Error updating device record",Toast.LENGTH_LONG).show();
+                                                                }else{
+                                                                    Intent intent = new Intent(SignIn.this,MainMenu.class);
+                                                                    intent.putExtra("uid",uid);
+                                                                    startActivity(intent);
+                                                                }
+                                                            }
+                                                        });
                                             }else{
-                                                Toast.makeText(getApplicationContext(),"NEED TO BE VERIFIED",Toast.LENGTH_LONG).show();
+                                                Intent intent = new Intent(SignIn.this,MainMenu.class);
+                                                intent.putExtra("uid",uid);
+                                                startActivity(intent);
                                             }
                                         }else{
-                                            Toast.makeText(getApplicationContext(),"Not in system",Toast.LENGTH_LONG).show();
+                                            if(!approved){
+                                                Intent intent= new Intent(SignIn.this,NotApprovedYet.class);
+                                                auth.signOut();
+                                                startActivity(intent);
+                                                finish();
+                                            }else{
+                                                if(!fileExists(PKFN)){
+                                                    FirebaseFirestore.getInstance().collection("users")
+                                                            .document(uid).collection("devices")
+                                                            .document(android_id).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                                                @SuppressLint("NewApi")
+                                                                @Override
+                                                                public void onComplete(@NonNull Task<DocumentSnapshot> task1) {
+                                                                    if(task1.isSuccessful()){
+                                                                        Blob blob = (Blob) task1.getResult().getData().get("extraData");
+                                                                        byte[] bytes = blob.toBytes();
+                                                                        File file = new File(getFilesDir(),PKFN);
+                                                                        try {
+                                                                            Files.write(file.toPath(),bytes);
+                                                                        } catch (Exception e) {
+                                                                            Toast.makeText(getApplicationContext(), e.getMessage(),Toast.LENGTH_LONG).show();
+                                                                        }
+                                                                    }
+                                                                }
+                                                            });
+                                                }
+                                                Intent intent = new Intent(SignIn.this,MainMenu.class);
+                                                intent.putExtra("uid",uid);
+                                                startActivity(intent);
+                                            }
                                         }
                                     }else{
-                                        Toast.makeText(getApplicationContext(),"Failed to recognize device",Toast.LENGTH_LONG).show();
+                                        Toast.makeText(getApplicationContext(),"Awaiting email verification",Toast.LENGTH_LONG).show();
                                     }
+                                }else{
+                                    byte[] bytes = new byte[0];
+                                    Blob blob = Blob.fromBytes(bytes);
+                                    boolean approved = false;
+                                    boolean original = false;
+                                    String make = Build.MANUFACTURER;
+                                    String model = Build.MODEL;
+                                    Map<String,Object> nested = new HashMap<>();
+                                    nested.put("android_id",android_id);
+                                    nested.put("approved",approved);
+                                    nested.put("make",make);
+                                    nested.put("extraData",blob);
+                                    nested.put("model",model);
+                                    nested.put("nickname","~");
+                                    nested.put("original",original);
+                                    FirebaseFirestore.getInstance().collection("users")
+                                            .document(uid).collection("devices")
+                                            .document(android_id).set(nested)
+                                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                @Override
+                                                public void onComplete(@NonNull Task<Void> task1) {
+                                                    if(task1.isSuccessful()){
+                                                        Intent intent = new Intent(SignIn.this,NotApprovedYet.class);
+                                                        startActivity(intent);
+                                                    }else{
+                                                        Toast.makeText(getApplicationContext(),"Failed adding device",Toast.LENGTH_LONG).show();
+                                                    }
+                                                }
+                                            });
                                 }
-                            });
-                    }else{
-                        etEmail.setText("");
-                        etPass.setText("");
-                        Toast.makeText(getApplicationContext(),"Failed to sign in.  Either your email or password are incorrect.  Or you need to register.",Toast.LENGTH_LONG).show();
-                    }
+                            }else{
+                                Toast.makeText(getApplicationContext(),"Failed to recognize device",Toast.LENGTH_LONG).show();
+                            }
+                        });
+                }else{
+                    etEmail.setText("");
+                    etPass.setText("");
+                    Toast.makeText(getApplicationContext(),"Failed to sign in.  Check your registered email and password are incorrect.",Toast.LENGTH_LONG).show();
                 }
             });
 

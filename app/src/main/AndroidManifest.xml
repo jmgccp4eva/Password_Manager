@@ -17,6 +17,15 @@
         android:theme="@style/Theme.Password_Manager"
         tools:targetApi="31">
         <activity
+            android:name=".PasswordListBuilder"
+            android:exported="false" />
+        <activity
+            android:name=".Devices"
+            android:exported="false" />
+        <activity
+            android:name=".DeviceListBuilder"
+            android:exported="false" />
+        <activity
             android:name=".NotApprovedYet"
             android:exported="false" />
         <activity

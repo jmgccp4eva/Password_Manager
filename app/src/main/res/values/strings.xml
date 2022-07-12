@@ -12,4 +12,6 @@
     <string name="password_visible_or_not">Password Visible or not</string>
     <string name="confirm_password_visible_or_not">Confirm Password Visible or not</string>
     <string name="notApprovedYet">This device is not approved yet.\n\nYou must approve this device from one of your already approved devices.\n\nOnce approved, you will be able to access your accounts.\n\nThe original device is approved automatically.\n\nIf you have more than one additional device to add, please feel free to add them all before approving.\n\nPlease close the app for now.</string>
+    <string name="devices">Devices</string>
+    <string name="passwords">Passwords</string>
 </resources>

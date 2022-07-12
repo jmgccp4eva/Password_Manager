@@ -14,4 +14,13 @@
     <string name="notApprovedYet">This device is not approved yet.\n\nYou must approve this device from one of your already approved devices.\n\nOnce approved, you will be able to access your accounts.\n\nThe original device is approved automatically.\n\nIf you have more than one additional device to add, please feel free to add them all before approving.\n\nPlease close the app for now.</string>
     <string name="devices">Devices</string>
     <string name="passwords">Passwords</string>
+    <string name="loading">Loading...</string>
+    <string name="go2pass">Go To Passwords</string>
+    <string name="save">Save</string>
+    <string name="nickname">Nickname</string>
+    <string name="model">Model</string>
+    <string name="make">Make</string>
+    <string name="approve">Approve</string>
+    <string name="deny">Deny</string>
+    <string name="thisdeviceneedsapproved">This device is not approved.\n\nIf you would like to approve this device, please enter the confirmation code and click approve.\n\nIf you would like to deny this device, please press the deny button.</string>
 </resources>

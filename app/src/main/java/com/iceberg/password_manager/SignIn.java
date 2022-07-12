@@ -2,7 +2,6 @@ package com.iceberg.password_manager;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
@@ -18,37 +17,30 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.common.io.Files;
 import com.google.firebase.analytics.FirebaseAnalytics;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.Blob;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.messaging.FirebaseMessaging;
-
 import java.io.File;
-import java.nio.file.Files;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 public class SignIn extends AppCompatActivity implements View.OnClickListener, View.OnTouchListener {
 
     private boolean original = false;
-    private FirebaseMessaging firebaseMessaging;
-    private String token = "";
+    FirebaseAnalytics mFirebaseAnalytics;
     private byte[] pk, pk2;
-    private FirebaseAnalytics mFirebaseAnalytics;
     private EditText etEmail, etPass;
     private Button btnSI, btnReg, btnFP;
     private FirebaseAuth auth;
     private boolean isFile = false;
     private boolean passwordVis = false;
     private String android_id = "";
-    private String make = "";
-    private String model = "";
     private String uid = "";
     private boolean approved = false;
     private static final String PKFN = "infor.pem";
@@ -68,7 +60,12 @@ public class SignIn extends AppCompatActivity implements View.OnClickListener, V
         btnSI = findViewById(R.id.btnSignIn);
         btnReg = findViewById(R.id.btnSIReg);
         btnFP = findViewById(R.id.btnFP);
-
+//        try {
+//            pk = Files.toByteArray(new File(getFilesDir(),PKFN));
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        pk2 = pk;
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
         android_id = Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
 
@@ -176,23 +173,46 @@ public class SignIn extends AppCompatActivity implements View.OnClickListener, V
                                                                 public void onComplete(@NonNull Task<DocumentSnapshot> task1) {
                                                                     if(task1.isSuccessful()){
                                                                         Blob blob = (Blob) task1.getResult().getData().get("extraData");
-                                                                        byte[] bytes = blob.toBytes();
+                                                                        pk = blob.toBytes();
                                                                         File file = new File(getFilesDir(),PKFN);
                                                                         try {
-                                                                            Files.write(file.toPath(),bytes);
+                                                                            Files.write(pk,file);
                                                                         } catch (Exception e) {
                                                                             Toast.makeText(getApplicationContext(), e.getMessage(),Toast.LENGTH_LONG).show();
                                                                         }
+                                                                        byte[] temp = new byte[0];
+                                                                        blob = Blob.fromBytes(temp);
+                                                                        FirebaseFirestore.getInstance().collection("users")
+                                                                                .document(uid).collection("devices")
+                                                                                .document(android_id).update("extraData",blob)
+                                                                                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                                    @Override
+                                                                                    public void onComplete(@NonNull Task<Void> task) {
+                                                                                        if(task.isSuccessful()){
+                                                                                            Intent intent = new Intent(SignIn.this,MainMenu.class);
+                                                                                            intent.putExtra("uid",uid);
+                                                                                            startActivity(intent);
+                                                                                            finish();
+                                                                                        }else{
+                                                                                            Toast.makeText(getApplicationContext(),"Failed to update data",Toast.LENGTH_LONG).show();
+                                                                                        }
+                                                                                    }
+                                                                                });
                                                                     }
                                                                 }
                                                             });
                                                 }
-                                                Intent intent = new Intent(SignIn.this,MainMenu.class);
-                                                intent.putExtra("uid",uid);
-                                                startActivity(intent);
+                                                else
+                                                {
+                                                    Intent intent = new Intent(SignIn.this, MainMenu.class);
+                                                    intent.putExtra("uid", uid);
+                                                    startActivity(intent);
+                                                }
                                             }
                                         }
                                     }else{
+                                        etPass.setText("");
+                                        etEmail.setText("");
                                         Toast.makeText(getApplicationContext(),"Awaiting email verification",Toast.LENGTH_LONG).show();
                                     }
                                 }else{
@@ -235,89 +255,6 @@ public class SignIn extends AppCompatActivity implements View.OnClickListener, V
                     Toast.makeText(getApplicationContext(),"Failed to sign in.  Check your registered email and password are incorrect.",Toast.LENGTH_LONG).show();
                 }
             });
-
-
-//        auth.signInWithEmailAndPassword(email,pass)
-//                .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-//                    @Override
-//                    public void onComplete(@NonNull Task<AuthResult> task) {
-//                        if(task.isSuccessful()){
-//                            FirebaseFirestore.getInstance().collection("users")
-//                                    .document(uid).collection("devices")
-//                                    .document(android_id).get()
-//                                    .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-//                                        @Override
-//                                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-//                                            if(task.isSuccessful()){
-//                                                DocumentSnapshot dss = task.getResult();
-//                                                if(dss.exists()){
-//                                                    approved = (boolean) dss.getData().get("approved");
-//                                                    original = (boolean) dss.getData().get("original");
-//                                                    if(approved){
-//                                                        if(!fileExists(PKFN)){
-//                                                            Blob blob = (Blob) document.getData().get("extraData");
-//                                                                                byte[] bytes = blob.toBytes();
-//                                                                                // write the file
-//                                                                                File file = new File(getFilesDir(),PKFN);
-//                                                                                try {
-//                                                                                    Files.write(file.toPath(),bytes);
-//                                                                                } catch (Exception e) {
-//                                                                                    Toast.makeText(getApplicationContext(),"Error writing file",Toast.LENGTH_LONG).show();
-//                                                                                }
-//                                                                            }else{
-//                                                                                Toast.makeText(getApplicationContext(),"Error with device specs",Toast.LENGTH_LONG).show();
-//                                                                            }
-//                                                                        }
-//                                                                    });
-//                                                        }
-//                                                        Intent intent = new Intent(SignIn.this,MainMenu.class);
-//                                                        intent.putExtra("uid",uid);
-//                                                        startActivity(intent);
-//                                                        finish();
-//                                                    }else{
-//                                                        if(original){
-//                                                            if(auth.getCurrentUser().isEmailVerified()){
-//                                                                FirebaseFirestore.getInstance().collection("users")
-//                                                                        .document(uid).collection("devices")
-//                                                                        .document(android_id).update("approved",true)
-//                                                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-//                                                                            @Override
-//                                                                            public void onComplete(@NonNull Task<Void> task) {
-//                                                                                if(task.isSuccessful()){
-//                                                                                    Intent intent = new Intent(SignIn.this,MainMenu.class);
-//                                                                                    intent.putExtra("uid",uid);
-//                                                                                    startActivity(intent);
-//                                                                                    finish();
-//                                                                                }else{
-//                                                                                    Toast.makeText(getApplicationContext(),"Couldn't update original user",Toast.LENGTH_LONG).show();
-//                                                                                    auth.signOut();
-//                                                                                }
-//                                                                            }
-//                                                                        });
-//                                                            }else{
-//                                                                Toast.makeText(getApplicationContext(),"Please verify your email",Toast.LENGTH_LONG).show();
-//                                                                auth.signOut();
-//                                                            }
-//                                                        }else{
-//                                                            startActivity(new Intent(SignIn.this,NotApprovedYet.class));
-//                                                            auth.signOut();
-//                                                            finish();
-//                                                        }
-//                                                    }
-//                                                }else{
-//                                                    Toast.makeText(getApplicationContext(),"Failed to locate",Toast.LENGTH_LONG).show();
-//                                                }
-//                                            }else{
-//                                                Toast.makeText(getApplicationContext(),"Error retrieving record",Toast.LENGTH_LONG).show();
-//                                            }
-//                                        }
-//                                    });
-//
-//                        }else{
-//                            Toast.makeText(getApplicationContext(),"Failed to sign in user",Toast.LENGTH_LONG).show();
-//                        }
-//                    }
-//                });
     }
 
     private boolean fileExists(String filename) {

@@ -2,6 +2,7 @@ package com.iceberg.password_manager;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,6 +11,8 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.List;
 
@@ -64,7 +67,46 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter.ViewHolder
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
+            myApprovedTitle = itemView.findViewById(R.id.tvAlreadyApproved);
+            itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    android_id = list.get(getAdapterPosition()).getAndroid_id();
+                    make = list.get(getAdapterPosition()).getMake();
+                    model = list.get(getAdapterPosition()).getModel();
+                    nickname = list.get(getAdapterPosition()).getNickname();
+                    uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                    Intent intent =new Intent(mActivity.getApplicationContext(),DeleteDevice.class);
+                    intent.putExtra("make",make);
+                    intent.putExtra("model",model);
+                    intent.putExtra("nickname",nickname);
+                    intent.putExtra("aid",android_id);
+                    intent.putExtra("uid",uid);
+                    intent.putExtra("pk",pk);
+                    mContext.startActivity(intent);
+                    return true;
+                }
+            });
 
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if(list.get(getAdapterPosition()).isApproved()){
+                        // Item is approved
+                        // Show pop up for editing
+                        String make = list.get(getAdapterPosition()).getMake();
+                        String model = list.get(getAdapterPosition()).getModel();
+                        String nickname = list.get(getAdapterPosition()).getNickname();
+                        ((Devices)mContext).nextInstance(list.get(getAdapterPosition()).getAndroid_id(),"editViewDevice",make,model,nickname);
+                    }else{
+                        // Item not approved yet
+                        // Show pop up for approving
+                        if(mContext instanceof Devices){
+                            ((Devices)mContext).nextInstance(list.get(getAdapterPosition()).getAndroid_id(),"createApproveOrDeny","","","");
+                        }
+                    }
+                }
+            });
         }
     }
 }

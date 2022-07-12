@@ -8,8 +8,10 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
+
+import com.google.common.io.Files;
+
 import java.io.File;
-import java.nio.file.Files;
 
 public class MainMenu extends AppCompatActivity implements View.OnClickListener {
 
@@ -38,14 +40,23 @@ public class MainMenu extends AppCompatActivity implements View.OnClickListener 
     public void onClick(View v) {
         switch(v.getId()){
             case R.id.btnDevices:
-                Intent intent = new Intent(MainMenu.this,DeviceListBuilder.class);
-                intent.putExtra("uid",uid);
-                startActivity(intent);
-                break;
-            case R.id.btnPasswords:
                 File file = new File(getFilesDir(),PKFN);
                 try{
-                    pk = Files.readAllBytes(file.toPath());
+                    pk = Files.toByteArray(file);
+                }catch(Exception e){
+                    Toast.makeText(getApplicationContext(),"Failed to read in data",Toast.LENGTH_LONG).show();
+                }
+                if(pk.length>0){
+                    Intent intent = new Intent(MainMenu.this,DeviceListBuilder.class);
+                    intent.putExtra("uid",uid);
+                    intent.putExtra("pk",pk);
+                    startActivity(intent);
+                }
+                break;
+            case R.id.btnPasswords:
+                File file1 = new File(getFilesDir(),PKFN);
+                try{
+                    pk = Files.toByteArray(file1);
                 }catch(Exception e){
                     Toast.makeText(getApplicationContext(),"Failed to read in data",Toast.LENGTH_LONG).show();
                 }

@@ -126,6 +126,9 @@ public class DeleteDevice extends AppCompatActivity implements View.OnClickListe
             FirebaseFirestore.getInstance().collection("users")
                     .document(uid).collection("devices")
                     .document(android_id).delete().addOnCompleteListener(task -> {
+                        // Get list of 'words' for this user
+                        // iterate through list and delete them all
+                        // then do the rest
                         if(task.isSuccessful()){
                             FirebaseFirestore.getInstance().collection("users")
                                     .document(uid).delete().addOnCompleteListener(task1 -> {

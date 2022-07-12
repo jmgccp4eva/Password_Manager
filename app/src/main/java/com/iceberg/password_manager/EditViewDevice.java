@@ -3,10 +3,12 @@ package com.iceberg.password_manager;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -58,8 +60,14 @@ public class EditViewDevice extends AppCompatActivity implements View.OnClickLis
         btnSave.setOnClickListener(this);
     }
 
+    public void hideSoftKeyboard(View view) {
+        InputMethodManager imm = (InputMethodManager)getSystemService(Activity.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(view.getWindowToken(),0);
+    }
+
     @Override
     public void onClick(View v) {
+        hideSoftKeyboard(v);
         switch(v.getId()){
             case R.id.ibCancelSaveNickname:
                 finish();

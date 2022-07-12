@@ -102,7 +102,6 @@ public class DeviceListBuilder extends AppCompatActivity {
                                     String make = (String) document.getData().get("make");
                                     String model = (String) document.getData().get("model");
                                     String nickname = (String) document.getData().get("nickname");
-                                    String token = (String) document.getData().get("token");
                                     if(!approved){
                                         Blob extraData;
                                         try{

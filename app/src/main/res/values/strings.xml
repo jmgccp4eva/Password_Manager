@@ -25,4 +25,7 @@
     <string name="thisdeviceneedsapproved">This device is not approved.\n\nIf you would like to approve this device, please enter the confirmation code and click approve.\n\nIf you would like to deny this device, please press the deny button.</string>
     <string name="delete">Delete</string>
     <string name="cancel">Cancel</string>
+    <string name="go2dev">Go To Devices</string>
+    <string name="itemName">Company/Website/App/Channel</string>
+    <string name="copy">Copy</string>
 </resources>

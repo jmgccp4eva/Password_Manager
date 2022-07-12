@@ -26,7 +26,6 @@ import com.google.firebase.firestore.Blob;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -140,16 +139,13 @@ public class SignIn extends AppCompatActivity implements View.OnClickListener, V
                                                 FirebaseFirestore.getInstance().collection("users")
                                                         .document(uid).collection("devices")
                                                         .document(android_id).update("approved",true)
-                                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                            @Override
-                                                            public void onComplete(@NonNull Task<Void> task1) {
-                                                                if(!task1.isSuccessful()){
-                                                                    Toast.makeText(getApplicationContext(),"Error updating device record",Toast.LENGTH_LONG).show();
-                                                                }else{
-                                                                    Intent intent = new Intent(SignIn.this,MainMenu.class);
-                                                                    intent.putExtra("uid",uid);
-                                                                    startActivity(intent);
-                                                                }
+                                                        .addOnCompleteListener(task11 -> {
+                                                            if(!task11.isSuccessful()){
+                                                                Toast.makeText(getApplicationContext(),"Error updating device record",Toast.LENGTH_LONG).show();
+                                                            }else{
+                                                                Intent intent = new Intent(SignIn.this,MainMenu.class);
+                                                                intent.putExtra("uid",uid);
+                                                                startActivity(intent);
                                                             }
                                                         });
                                             }else{
@@ -167,38 +163,34 @@ public class SignIn extends AppCompatActivity implements View.OnClickListener, V
                                                 if(!fileExists(PKFN)){
                                                     FirebaseFirestore.getInstance().collection("users")
                                                             .document(uid).collection("devices")
-                                                            .document(android_id).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                                                                @SuppressLint("NewApi")
-                                                                @Override
-                                                                public void onComplete(@NonNull Task<DocumentSnapshot> task1) {
-                                                                    if(task1.isSuccessful()){
-                                                                        Blob blob = (Blob) task1.getResult().getData().get("extraData");
-                                                                        pk = blob.toBytes();
-                                                                        File file = new File(getFilesDir(),PKFN);
-                                                                        try {
-                                                                            Files.write(pk,file);
-                                                                        } catch (Exception e) {
-                                                                            Toast.makeText(getApplicationContext(), e.getMessage(),Toast.LENGTH_LONG).show();
-                                                                        }
-                                                                        byte[] temp = new byte[0];
-                                                                        blob = Blob.fromBytes(temp);
-                                                                        FirebaseFirestore.getInstance().collection("users")
-                                                                                .document(uid).collection("devices")
-                                                                                .document(android_id).update("extraData",blob)
-                                                                                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                                                    @Override
-                                                                                    public void onComplete(@NonNull Task<Void> task) {
-                                                                                        if(task.isSuccessful()){
-                                                                                            Intent intent = new Intent(SignIn.this,MainMenu.class);
-                                                                                            intent.putExtra("uid",uid);
-                                                                                            startActivity(intent);
-                                                                                            finish();
-                                                                                        }else{
-                                                                                            Toast.makeText(getApplicationContext(),"Failed to update data",Toast.LENGTH_LONG).show();
-                                                                                        }
-                                                                                    }
-                                                                                });
+                                                            .document(android_id).get().addOnCompleteListener(task112 -> {
+                                                                if(task112.isSuccessful()){
+                                                                    Blob blob = (Blob) task112.getResult().getData().get("extraData");
+                                                                    pk = blob.toBytes();
+                                                                    File file = new File(getFilesDir(),PKFN);
+                                                                    try {
+                                                                        Files.write(pk,file);
+                                                                    } catch (Exception e) {
+                                                                        Toast.makeText(getApplicationContext(), e.getMessage(),Toast.LENGTH_LONG).show();
                                                                     }
+                                                                    byte[] temp = new byte[0];
+                                                                    blob = Blob.fromBytes(temp);
+                                                                    FirebaseFirestore.getInstance().collection("users")
+                                                                            .document(uid).collection("devices")
+                                                                            .document(android_id).update("extraData",blob)
+                                                                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                                @Override
+                                                                                public void onComplete(@NonNull Task<Void> task2) {
+                                                                                    if(task2.isSuccessful()){
+                                                                                        Intent intent = new Intent(SignIn.this,MainMenu.class);
+                                                                                        intent.putExtra("uid",uid);
+                                                                                        startActivity(intent);
+                                                                                        finish();
+                                                                                    }else{
+                                                                                        Toast.makeText(getApplicationContext(),"Failed to update data",Toast.LENGTH_LONG).show();
+                                                                                    }
+                                                                                }
+                                                                            });
                                                                 }
                                                             });
                                                 }
@@ -216,6 +208,10 @@ public class SignIn extends AppCompatActivity implements View.OnClickListener, V
                                         Toast.makeText(getApplicationContext(),"Awaiting email verification",Toast.LENGTH_LONG).show();
                                     }
                                 }else{
+                                    if(fileExists(PKFN)){
+                                        File file = new File(getFilesDir(),PKFN);
+                                        file.delete();
+                                    }
                                     byte[] bytes = new byte[0];
                                     Blob blob = Blob.fromBytes(bytes);
                                     boolean approved = false;
@@ -233,15 +229,12 @@ public class SignIn extends AppCompatActivity implements View.OnClickListener, V
                                     FirebaseFirestore.getInstance().collection("users")
                                             .document(uid).collection("devices")
                                             .document(android_id).set(nested)
-                                            .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                @Override
-                                                public void onComplete(@NonNull Task<Void> task1) {
-                                                    if(task1.isSuccessful()){
-                                                        Intent intent = new Intent(SignIn.this,NotApprovedYet.class);
-                                                        startActivity(intent);
-                                                    }else{
-                                                        Toast.makeText(getApplicationContext(),"Failed adding device",Toast.LENGTH_LONG).show();
-                                                    }
+                                            .addOnCompleteListener(task113 -> {
+                                                if(task113.isSuccessful()){
+                                                    Intent intent = new Intent(SignIn.this,NotApprovedYet.class);
+                                                    startActivity(intent);
+                                                }else{
+                                                    Toast.makeText(getApplicationContext(),"Failed adding device",Toast.LENGTH_LONG).show();
                                                 }
                                             });
                                 }

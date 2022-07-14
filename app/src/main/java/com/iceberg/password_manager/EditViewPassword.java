@@ -25,11 +25,16 @@ import com.google.firebase.firestore.Blob;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.crypto.Cipher;
 
@@ -38,9 +43,8 @@ public class EditViewPassword extends AppCompatActivity implements View.OnClickL
     EditText etItemName, etEmail, etPassword;
     ImageButton ibCancelEditViewPass;
     Button btnSavePWonEVPW, btnCopyPass, btnCopyEmail;
-    String origItemName,origEmail,origPass,pwID,uid;
+    String encItemName,origItemName,origEmail,origPass,pwID,uid;
     byte[] pk;
-    private boolean passwordHidden = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +56,16 @@ public class EditViewPassword extends AppCompatActivity implements View.OnClickL
         uid = oi.getStringExtra("uid");
         pwID = oi.getStringExtra("pwID");
         origItemName = oi.getStringExtra("itemName");
+        byte[] encBytes = Base64.decode(origItemName,2);
+        try{
+            PrivateKey privateKey = KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(pk));
+            Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+            cipher.init(Cipher.DECRYPT_MODE,privateKey);
+            byte[] decryptedMsg = cipher.doFinal(encBytes);
+            origItemName = new String(decryptedMsg, StandardCharsets.UTF_8);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
         origEmail = oi.getStringExtra("email");
         origPass = oi.getStringExtra("pass");
 
@@ -71,6 +85,8 @@ public class EditViewPassword extends AppCompatActivity implements View.OnClickL
         btnSavePWonEVPW.setOnClickListener(this);
         btnCopyPass.setOnClickListener(this);
         btnCopyEmail.setOnClickListener(this);
+
+        etItemName.setEnabled(false);
 
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
     }
@@ -93,51 +109,50 @@ public class EditViewPassword extends AppCompatActivity implements View.OnClickL
         ClipData clip;
         switch (v.getId()){
             case R.id.ibCancelEVPW:
-                startActivity(intent);
                 finish();
                 break;
             case R.id.btnSavePasswordInfo:
+                String newpwid = etItemName.getText().toString();
                 String newPass = etPassword.getText().toString().trim();
                 String newEmail = etEmail.getText().toString().trim();
                 String newItemName = etItemName.getText().toString().trim();
                 FirebaseFirestore.getInstance().collection("users")
-                        .document(uid).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                            @Override
-                            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                if(task.isSuccessful()){
-                                    DocumentSnapshot document = task.getResult();
-                                    Blob blob = (Blob) document.getData().get("blob");
-                                    byte[] bytes = blob.toBytes();
-                                    try {
-                                        PublicKey publicKey = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(bytes));
-                                        byte[] emailStr2Bytes = newEmail.getBytes();
-                                        byte[] passStr2Bytes = newPass.getBytes();
-                                        Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
-                                        cipher.init(Cipher.ENCRYPT_MODE,publicKey);
-                                        byte[] encEmailByte = cipher.doFinal(emailStr2Bytes);
-                                        byte[] encPassByte = cipher.doFinal(passStr2Bytes);
-                                        String encEmail = Base64.encodeToString(encEmailByte,2);
-                                        String encPass = Base64.encodeToString(encPassByte,2);
-                                        FirebaseFirestore.getInstance().collection("users")
-                                                .document(uid).collection("words")
-                                                .document(pwID).update("itemName",newItemName,"email",encEmail,"password",encPass)
-                                                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                    @Override
-                                                    public void onComplete(@NonNull Task<Void> task) {
-                                                        if(task.isSuccessful()){
-                                                            startActivity(intent);
-                                                            finish();
-                                                        }else{
-                                                            Toast.makeText(getApplicationContext(),"Error updating password record",Toast.LENGTH_LONG).show();
-                                                        }
-                                                    }
-                                                });
-                                    } catch (Exception e) {
-                                        Toast.makeText(getApplicationContext(),"Key error",Toast.LENGTH_LONG).show();
-                                    }
-                                }else{
-                                    Toast.makeText(getApplicationContext(),"Failed to read",Toast.LENGTH_LONG).show();
+                        .document(uid).get().addOnCompleteListener(task -> {
+                            if(task.isSuccessful()){
+                                DocumentSnapshot document = task.getResult();
+                                Blob blob = (Blob) document.getData().get("blob");
+                                byte[] bytes = blob.toBytes();
+                                try {
+                                    PublicKey publicKey = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(bytes));
+                                    byte[] itemNameStr2Bytes = newItemName.getBytes();
+                                    byte[] emailStr2Bytes = newEmail.getBytes();
+                                    byte[] passStr2Bytes = newPass.getBytes();
+                                    Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+                                    cipher.init(Cipher.ENCRYPT_MODE,publicKey);
+                                    byte[] encItemNameByte = cipher.doFinal(itemNameStr2Bytes);
+                                    byte[] encEmailByte = cipher.doFinal(emailStr2Bytes);
+                                    byte[] encPassByte = cipher.doFinal(passStr2Bytes);
+                                    String encItemName = Base64.encodeToString(encItemNameByte,2);
+                                    String encEmail = Base64.encodeToString(encEmailByte,2);
+                                    String encPass = Base64.encodeToString(encPassByte,2);
+                                    FirebaseFirestore.getInstance().collection("users")
+                                            .document(uid).collection("words")
+                                            .document(pwID)
+                                            .update("itemName",encItemName,"email",encEmail,"password",encPass)
+                                            .addOnCompleteListener(task1 -> {
+                                                if(task1.isSuccessful()){
+                                                    Toast.makeText(getApplicationContext(),"Successfully updated password record",Toast.LENGTH_LONG).show();
+                                                    startActivity(intent);
+                                                    finish();
+                                                }else{
+                                                    Toast.makeText(getApplicationContext(),"Error updating password record",Toast.LENGTH_LONG).show();
+                                                }
+                                            });
+                                } catch (Exception e) {
+                                    Toast.makeText(getApplicationContext(),"Key error",Toast.LENGTH_LONG).show();
                                 }
+                            }else{
+                                Toast.makeText(getApplicationContext(),"Failed to read",Toast.LENGTH_LONG).show();
                             }
                         });
                 break;

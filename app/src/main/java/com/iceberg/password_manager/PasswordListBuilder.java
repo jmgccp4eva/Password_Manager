@@ -48,43 +48,32 @@ public class PasswordListBuilder extends AppCompatActivity {
         pb = findViewById(R.id.progressBarPassword);
         btnProceed = findViewById(R.id.btnProceedPassword);
 
-        btnProceed.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) { readInPasswords(); }
-        });
+        btnProceed.setOnClickListener(v -> readInPasswords());
 
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                btnProceed.performClick();
-            }
-        },1000);
+        new Handler().postDelayed(() -> btnProceed.performClick(),1000);
     }
 
     private void readInPasswords() {
         Task<QuerySnapshot> tqss = FirebaseFirestore.getInstance()
                 .collection("users").document(uid)
                 .collection("words").get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if(task.isSuccessful()){
-                            List<String> list = new ArrayList<>();
-                            for(QueryDocumentSnapshot qdss : task.getResult()){
-                                list.add(qdss.getId());
-                            }
-                            List<Password> passwords = new ArrayList<>();
-                            getPasswordsFromList(list,0, passwords);
-                        }else{
-                            Toast.makeText(getApplicationContext(),"Error reading Passwords",Toast.LENGTH_LONG).show();
+                .addOnCompleteListener(task -> {
+                    if(task.isSuccessful()){
+                        List<String> list = new ArrayList<>();
+                        for(QueryDocumentSnapshot qdss : task.getResult()){
+                            list.add(qdss.getId());
                         }
+                        List<Password> passwords = new ArrayList<>();
+                        getPasswordsFromList(list,0, passwords);
+                    }else{
+                        Toast.makeText(getApplicationContext(),"Error reading Passwords",Toast.LENGTH_LONG).show();
                     }
                 });
     }
 
     private void getPasswordsFromList(List<String> list, int position, List<Password> passwords) {
         FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
-        if(list.size()>0 && list!=null){
+        if(list.size()>0){
             Task<DocumentSnapshot> tgss = firebaseFirestore.collection("users")
                     .document(uid).collection("words")
                     .document(list.get(position)).get()
@@ -99,12 +88,15 @@ public class PasswordListBuilder extends AppCompatActivity {
                                     String encEmail = (String) document.getData().get("email");
                                     String encPassword = (String)document.getData().get("password");
                                     try {
+                                        byte[] encItemNameBytes = Base64.decode(itemName,2);
                                         byte[] encEmailBytes = Base64.decode(encEmail,2);
                                         byte[] encPassBytes = Base64.decode(encPassword,2);
                                         PrivateKey privateKey = KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(pk));
                                         Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
                                         cipher.init(Cipher.DECRYPT_MODE,privateKey);
+                                        byte[] decItemName = cipher.doFinal(encItemNameBytes);
                                         byte[] decMsg = cipher.doFinal(encEmailBytes);
+                                        itemName = new String(decItemName);
                                         String email = new String(decMsg);
                                         byte[] decPass = cipher.doFinal(encPassBytes);
                                         String password = new String(decPass);
@@ -117,6 +109,7 @@ public class PasswordListBuilder extends AppCompatActivity {
                                                 Intent intent = new Intent(PasswordListBuilder.this,Passwords.class);
                                                 intent.putExtra("pk",pk);
                                                 intent.putExtra("uid",uid);
+                                                intent.putExtra("size","");
                                                 startActivity(intent);
                                                 finish();
                                             }else{
@@ -134,6 +127,13 @@ public class PasswordListBuilder extends AppCompatActivity {
                             }
                         }
                     });
+        }else{
+            Intent intent = new Intent(PasswordListBuilder.this,Passwords.class);
+            intent.putExtra("pk",pk);
+            intent.putExtra("uid",uid);
+            intent.putExtra("size","0");
+            startActivity(intent);
+            finish();
         }
     }
 

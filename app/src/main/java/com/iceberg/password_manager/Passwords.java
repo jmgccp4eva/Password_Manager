@@ -18,7 +18,7 @@ import java.util.List;
 
 public class Passwords extends AppCompatActivity {
 
-    private String uid;
+    private String uid,size,itemName,origEmail,origPass;
     List<Password> passwords;
     RecyclerView recyclerView;
     PWAdapter adapter;
@@ -34,41 +34,41 @@ public class Passwords extends AppCompatActivity {
         Intent oi = getIntent();
         uid = oi.getStringExtra("uid");
         pk = oi.getByteArrayExtra("pk");
+        size = oi.getStringExtra("size");
 
         ibAddPW = findViewById(R.id.ibAddPW);
         btnGo2Dev = findViewById(R.id.btnGo2Dev);
-        passwords = convertToPasswords(readInData());
-        deleteFile("passwords.tsv");
-        recyclerView = findViewById(R.id.listOfPasswords);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new PWAdapter(getApplicationContext(),passwords,Passwords.this,pk);
-        recyclerView.setAdapter(adapter);
+        if(!size.equals("0")){
+            passwords = convertToPasswords(readInData());
+            deleteFile("passwords.tsv");
+            recyclerView = findViewById(R.id.listOfPasswords);
+            recyclerView.setLayoutManager(new LinearLayoutManager(this));
+            adapter = new PWAdapter(this,passwords,Passwords.this,pk);
+            recyclerView.setAdapter(adapter);
+        }
 
-        btnGo2Dev.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent1 = new Intent(Passwords.this,DeviceListBuilder.class);
-                intent1.putExtra("uid",uid);
-                intent1.putExtra("pk",pk);
-                startActivity(intent1);
-                finish();
-            }
+        btnGo2Dev.setOnClickListener(v -> {
+            Intent intent1 = new Intent(Passwords.this,DeviceListBuilder.class);
+            intent1.putExtra("uid",uid);
+            intent1.putExtra("pk",pk);
+            startActivity(intent1);
+            finish();
         });
 
-        ibAddPW.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-            }
+        ibAddPW.setOnClickListener(v -> {
+            Intent intent = new Intent(Passwords.this,AddPassword.class);
+            intent.putExtra("uid",uid);
+            intent.putExtra("pk",pk);
+            startActivity(intent);
         });
     }
 
     private List<Password> convertToPasswords(String temp) {
         List<Password> passwords = new ArrayList<>();
         String[] lines = temp.split("\n");
-        for(int x=0;x<lines.length;x++){
-            String[] items = lines[x].split("\t");
-            Password p = new Password(items[0],items[1],items[2],items[3]);
+        for (String line : lines) {
+            String[] items = line.split("\t");
+            Password p = new Password(items[0], items[1], items[2], items[3]);
             passwords.add(p);
         }
         return passwords;

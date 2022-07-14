@@ -1,5 +1,6 @@
 package com.iceberg.password_manager;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -74,9 +75,10 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter.ViewHolder
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             myApprovedTitle = itemView.findViewById(R.id.tvAlreadyApproved);
+
             itemView.setOnLongClickListener(v -> {
                 int size = getItemCount();
-                String myAndroidID = Settings.Secure.getString(mContext.getContentResolver(), Settings.Secure.ANDROID_ID);
+                @SuppressLint("HardwareIds") String myAndroidID = Settings.Secure.getString(mContext.getContentResolver(), Settings.Secure.ANDROID_ID);
                 android_id = list.get(getAdapterPosition()).getAndroid_id();
                 make = list.get(getAdapterPosition()).getMake();
                 model = list.get(getAdapterPosition()).getModel();

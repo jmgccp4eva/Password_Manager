@@ -16,6 +16,7 @@ import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -31,6 +32,7 @@ import java.util.Map;
 
 public class SignIn extends AppCompatActivity implements View.OnClickListener, View.OnTouchListener {
 
+    private ProgressBar pb;
     private boolean original = false;
     FirebaseAnalytics mFirebaseAnalytics;
     private byte[] pk, pk2;
@@ -53,7 +55,15 @@ public class SignIn extends AppCompatActivity implements View.OnClickListener, V
         FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
         auth = FirebaseAuth.getInstance();
+        try{
+            uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        }catch (Exception e){
+            uid = "";
+        }
 
+
+        pb = findViewById(R.id.pbSignIn);
+        pb.setVisibility(View.GONE);
         etEmail = findViewById(R.id.etSIEmail);
         etPass = findViewById(R.id.etSIPass);
         btnSI = findViewById(R.id.btnSignIn);
@@ -73,12 +83,6 @@ public class SignIn extends AppCompatActivity implements View.OnClickListener, V
         btnReg.setOnClickListener(this);
 
         etPass.setOnTouchListener(this);
-
-        if(fileExists(PKFN)){
-            Toast.makeText(getApplicationContext(),"Exists",Toast.LENGTH_LONG).show();
-        }else{
-            Toast.makeText(getApplicationContext(),"DOES NOT EXIST",Toast.LENGTH_LONG).show();
-        }
     }
 
     public void hideSoftKeyboard(View view) {
@@ -91,15 +95,24 @@ public class SignIn extends AppCompatActivity implements View.OnClickListener, V
     public void onClick(View v) {
         switch(v.getId()){
             case R.id.btnSignIn:
+                pb.setVisibility(View.VISIBLE);
                 hideSoftKeyboard(v);
                 String email = etEmail.getText().toString().trim();
                 String pass = etPass.getText().toString().trim();
+                etEmail.setText("");
+                etPass.setText("");
                 verify(email,pass);
                 break;
             case R.id.btnFP:
-
+                etEmail.setText("");
+                etPass.setText("");
+                Intent intent1 = new Intent(SignIn.this,ForgotPassword.class);
+                intent1.putExtra("uid",uid);
+                startActivity(intent1);
                 break;
             case R.id.btnSIReg:
+                etEmail.setText("");
+                etPass.setText("");
                 Intent intent = new Intent(SignIn.this, Registration.class);
                 intent.putExtra("android_id",android_id);
                 startActivity(intent);
@@ -111,19 +124,22 @@ public class SignIn extends AppCompatActivity implements View.OnClickListener, V
         if(email.length()>0 && pass.length()>0){
             signInUser(email,pass);
         }else if(email.length()<1 && pass.length()>0){
+            pb.setVisibility(View.GONE);
             Toast.makeText(getApplicationContext(),"Email is required",Toast.LENGTH_LONG).show();
         }else if(email.length()>0){
+            pb.setVisibility(View.GONE);
             Toast.makeText(getApplicationContext(),"Password is required",Toast.LENGTH_LONG).show();
         }else{
+            pb.setVisibility(View.GONE);
             Toast.makeText(SignIn.this, "Email and Passward are required", Toast.LENGTH_LONG).show();
         }
     }
 
     private void signInUser(String email, String pass) {
+        FirebaseAuth.getInstance().signOut();
         auth.signInWithEmailAndPassword(email,pass)
             .addOnCompleteListener(task -> {
                 if(task.isSuccessful()) {
-                    uid = auth.getCurrentUser().getUid();
                     FirebaseFirestore.getInstance().collection("users")
                         .document(uid).collection("devices")
                         .document(android_id).get()
@@ -141,17 +157,20 @@ public class SignIn extends AppCompatActivity implements View.OnClickListener, V
                                                         .document(android_id).update("approved",true)
                                                         .addOnCompleteListener(task11 -> {
                                                             if(!task11.isSuccessful()){
+                                                                pb.setVisibility(View.GONE);
                                                                 Toast.makeText(getApplicationContext(),"Error updating device record",Toast.LENGTH_LONG).show();
                                                             }else{
                                                                 Intent intent = new Intent(SignIn.this,MainMenu.class);
                                                                 intent.putExtra("uid",uid);
                                                                 startActivity(intent);
+                                                                finish();
                                                             }
                                                         });
                                             }else{
                                                 Intent intent = new Intent(SignIn.this,MainMenu.class);
                                                 intent.putExtra("uid",uid);
                                                 startActivity(intent);
+                                                finish();
                                             }
                                         }else{
                                             if(!approved){
@@ -169,8 +188,9 @@ public class SignIn extends AppCompatActivity implements View.OnClickListener, V
                                                                     pk = blob.toBytes();
                                                                     File file = new File(getFilesDir(),PKFN);
                                                                     try {
-                                                                        Files.write(pk,file);
+                                                                        com.google.common.io.Files.write(pk,file);
                                                                     } catch (Exception e) {
+                                                                        pb.setVisibility(View.GONE);
                                                                         Toast.makeText(getApplicationContext(), e.getMessage(),Toast.LENGTH_LONG).show();
                                                                     }
                                                                     byte[] temp = new byte[0];
@@ -178,17 +198,15 @@ public class SignIn extends AppCompatActivity implements View.OnClickListener, V
                                                                     FirebaseFirestore.getInstance().collection("users")
                                                                             .document(uid).collection("devices")
                                                                             .document(android_id).update("extraData",blob)
-                                                                            .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                                                @Override
-                                                                                public void onComplete(@NonNull Task<Void> task2) {
-                                                                                    if(task2.isSuccessful()){
-                                                                                        Intent intent = new Intent(SignIn.this,MainMenu.class);
-                                                                                        intent.putExtra("uid",uid);
-                                                                                        startActivity(intent);
-                                                                                        finish();
-                                                                                    }else{
-                                                                                        Toast.makeText(getApplicationContext(),"Failed to update data",Toast.LENGTH_LONG).show();
-                                                                                    }
+                                                                            .addOnCompleteListener(task2 -> {
+                                                                                if(task2.isSuccessful()){
+                                                                                    Intent intent = new Intent(SignIn.this,MainMenu.class);
+                                                                                    intent.putExtra("uid",uid);
+                                                                                    startActivity(intent);
+                                                                                    finish();
+                                                                                }else{
+                                                                                    pb.setVisibility(View.GONE);
+                                                                                    Toast.makeText(getApplicationContext(),"Failed to update data",Toast.LENGTH_LONG).show();
                                                                                 }
                                                                             });
                                                                 }
@@ -203,6 +221,7 @@ public class SignIn extends AppCompatActivity implements View.OnClickListener, V
                                             }
                                         }
                                     }else{
+                                        pb.setVisibility(View.GONE);
                                         etPass.setText("");
                                         etEmail.setText("");
                                         Toast.makeText(getApplicationContext(),"Awaiting email verification",Toast.LENGTH_LONG).show();
@@ -233,18 +252,22 @@ public class SignIn extends AppCompatActivity implements View.OnClickListener, V
                                                 if(task113.isSuccessful()){
                                                     Intent intent = new Intent(SignIn.this,NotApprovedYet.class);
                                                     startActivity(intent);
+                                                    finish();
                                                 }else{
+                                                    pb.setVisibility(View.GONE);
                                                     Toast.makeText(getApplicationContext(),"Failed adding device",Toast.LENGTH_LONG).show();
                                                 }
                                             });
                                 }
                             }else{
+                                pb.setVisibility(View.GONE);
                                 Toast.makeText(getApplicationContext(),"Failed to recognize device",Toast.LENGTH_LONG).show();
                             }
                         });
                 }else{
                     etEmail.setText("");
                     etPass.setText("");
+                    pb.setVisibility(View.GONE);
                     Toast.makeText(getApplicationContext(),"Failed to sign in.  Check your registered email and password are incorrect.",Toast.LENGTH_LONG).show();
                 }
             });
@@ -253,10 +276,7 @@ public class SignIn extends AppCompatActivity implements View.OnClickListener, V
     private boolean fileExists(String filename) {
         File path = getFilesDir();
         File file = new File(path,filename);
-        if(file.exists()){
-            return true;
-        }
-        return false;
+        return file.exists();
     }
 
     @SuppressLint("ClickableViewAccessibility")

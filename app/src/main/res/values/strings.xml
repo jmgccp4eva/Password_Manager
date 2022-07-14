@@ -28,4 +28,12 @@
     <string name="go2dev">Go To Devices</string>
     <string name="itemName">Company/Website/App/Channel</string>
     <string name="copy">Copy</string>
+    <string name="resetPW">Reset Password</string>
+    <string name="newPass">New Password</string>
+    <string name="confNewPass">Confirm New Password</string>
+    <string name="pwmust">Error: Password must contain:\nAt least 12 digits\nAt least 1 lowercase letter\nAt least 1 uppercase letter\nAt least 1 number\nAt least 1 special character</string>
+    <string name="delDev">Delete Device</string>
+    <string name="device">Device Information</string>
+    <string name="evpw">Password Information</string>
+    <string name="addapw">Add a Password Record</string>
 </resources>

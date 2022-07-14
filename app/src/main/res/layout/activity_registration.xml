@@ -96,7 +96,7 @@
         android:contentDescription="@string/password_visible_or_not" />
 
     <ImageButton
-        android:id="@+id/ibConfPasswordVis"
+        android:id="@+id/ibFPConfPasswordVis"
         android:layout_width="50dp"
         android:layout_height="45dp"
         android:background="@color/white"

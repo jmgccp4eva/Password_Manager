@@ -17,49 +17,9 @@
         android:theme="@style/Theme.Password_Manager"
         tools:targetApi="31">
         <activity
-            android:name=".DeletePassword"
-            android:exported="false" />
-        <activity
-            android:name=".AddPassword"
-            android:exported="false" />
-        <activity
-            android:name=".EditViewPassword"
-            android:exported="false" />
-        <activity
-            android:name=".Passwords"
-            android:exported="false" />
-        <activity
-            android:name=".EditViewDevice"
-            android:exported="false" />
-        <activity
-            android:name=".ApproveOrDenyDevice"
-            android:exported="false" />
-        <activity
-            android:name=".DeleteDevice"
-            android:exported="false" />
-        <activity
-            android:name=".PasswordListBuilder"
-            android:exported="false" />
-        <activity
-            android:name=".Devices"
-            android:exported="false" />
-        <activity
-            android:name=".DeviceListBuilder"
-            android:exported="false" />
-        <activity
-            android:name=".NotApprovedYet"
-            android:exported="false" />
-        <activity
-            android:name=".MainMenu"
-            android:exported="false" />
-        <activity
-            android:name=".Registration"
-            android:exported="false"
-            android:label="@string/register" />
-        <activity
-            android:name=".SignIn"
-            android:exported="true"
-            android:label="@string/signIn">
+            android:name=".Splash"
+            android:label="@string/app_name"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -67,6 +27,65 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".ForgotPassword"
+            android:label="@string/forgotPassword"
+            android:exported="false" />
+        <activity
+            android:name=".DeletePassword"
+            android:exported="false" />
+        <activity
+            android:name=".AddPassword"
+            android:label="@string/addapw"
+            android:exported="false" />
+        <activity
+            android:name=".EditViewPassword"
+            android:label="@string/evpw"
+            android:exported="false" />
+        <activity
+            android:name=".Passwords"
+            android:label="@string/passwords"
+            android:exported="false" />
+        <activity
+            android:name=".EditViewDevice"
+            android:label="@string/device"
+            android:exported="false" />
+        <activity
+            android:name=".ApproveOrDenyDevice"
+            android:label="@string/approve"
+            android:exported="false" />
+        <activity
+            android:name=".DeleteDevice"
+            android:label="@string/delDev"
+            android:exported="false" />
+        <activity
+            android:name=".PasswordListBuilder"
+            android:label="@string/loading"
+            android:exported="false" />
+        <activity
+            android:name=".Devices"
+            android:label="@string/devices"
+            android:exported="false" />
+        <activity
+            android:name=".DeviceListBuilder"
+            android:label="@string/loading"
+            android:exported="false" />
+        <activity
+            android:name=".NotApprovedYet"
+            android:label="@string/notApprovedYet"
+            android:exported="false" />
+        <activity
+            android:name=".MainMenu"
+            android:label="@string/app_name"
+            android:exported="false" />
+        <activity
+            android:name=".Registration"
+            android:exported="false"
+            android:label="@string/register" />
+        <activity
+            android:name=".SignIn"
+            android:exported="false"
+            android:label="@string/signIn"/>
     </application>
 
 </manifest>

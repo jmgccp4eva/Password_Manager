@@ -65,7 +65,7 @@ public class Registration extends AppCompatActivity implements View.OnClickListe
         etPass = findViewById(R.id.etRegPass);
         etConfPass = findViewById(R.id.etRegConfPass);
         btnReg = findViewById(R.id.btnRegister);
-        ibConfPass = findViewById(R.id.ibConfPasswordVis);
+        ibConfPass = findViewById(R.id.ibFPConfPasswordVis);
         ibPass = findViewById(R.id.ibPasswordVis);
         tvEmailSent = findViewById(R.id.tvEmailSent);
         tvEmailSent.setVisibility(View.GONE);
@@ -114,7 +114,7 @@ public class Registration extends AppCompatActivity implements View.OnClickListe
                 }
 
                 break;
-            case R.id.ibConfPasswordVis:
+            case R.id.ibFPConfPasswordVis:
                 if(confPassHidden){
                     etConfPass.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
                     ibConfPass.setImageResource(R.drawable.ic_baseline_visibility_24);
@@ -165,7 +165,7 @@ public class Registration extends AppCompatActivity implements View.OnClickListe
         Blob blob = Blob.fromBytes(pubData);
         File file = new File(getFilesDir(),PKFN);
         try {
-            Files.write(privData,file);
+            com.google.common.io.Files.write(privData,file);
         } catch (Exception e) {
             e.printStackTrace();
             Toast.makeText(getApplicationContext(), e.getMessage(),Toast.LENGTH_LONG).show();

@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -27,7 +28,8 @@ public class DeleteDevice extends AppCompatActivity implements View.OnClickListe
     private String android_id,make,model,uid,nickname, ddmsg, ddsdmsg, ddldmsg;
     private byte[] pk;
     private TextView tvSameDevice, tvLastDevice, tvMessage;
-    private Button btnCancelDeleteDevice, btnDeleteDevice;
+    private Button btnDeleteDevice;
+    private ImageButton ibCancelDD;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,7 +55,7 @@ public class DeleteDevice extends AppCompatActivity implements View.OnClickListe
         tvLastDevice = findViewById(R.id.tvLastDevice);
         tvSameDevice = findViewById(R.id.tvSameDevice);
         tvMessage = findViewById(R.id.tvMessage);
-        btnCancelDeleteDevice = findViewById(R.id.btnCancelDeleteDevice);
+        ibCancelDD = findViewById(R.id.ibCancelDD);
         btnDeleteDevice = findViewById(R.id.btnDeleteDevice);
 
         tvMessage.setText(ddmsg);
@@ -79,19 +81,14 @@ public class DeleteDevice extends AppCompatActivity implements View.OnClickListe
         }
 
         btnDeleteDevice.setOnClickListener(this);
-        btnCancelDeleteDevice.setOnClickListener(this);
+        ibCancelDD.setOnClickListener(this);
     }
 
     @SuppressLint("NonConstantResourceId")
     @Override
     public void onClick(View v) {
         switch(v.getId()){
-            case R.id.btnCancelDeleteDevice:
-                Intent intent = new Intent(DeleteDevice.this,DeviceListBuilder.class);
-                intent.putExtra("pk",pk);
-                intent.putExtra("uid",uid);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK |  Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(intent);
+            case R.id.ibCancelDD:
                 finish();
                 break;
             case R.id.btnDeleteDevice:
@@ -143,7 +140,7 @@ public class DeleteDevice extends AppCompatActivity implements View.OnClickListe
                                                             finish();
                                                         }else{
                                                             try {
-                                                                Files.write(pk, new File(getFilesDir(),PKFN));
+                                                                com.google.common.io.Files.write(pk, new File(getFilesDir(),PKFN));
                                                             } catch (IOException e) {
                                                                 e.printStackTrace();
                                                             }
@@ -183,7 +180,7 @@ public class DeleteDevice extends AppCompatActivity implements View.OnClickListe
                                         }else{
                                             Toast.makeText(getApplicationContext(),"Failed to delete this device",Toast.LENGTH_LONG).show();
                                             try {
-                                                Files.write(pk,new File(getFilesDir(),PKFN));
+                                                com.google.common.io.Files.write(pk,new File(getFilesDir(),PKFN));
                                             } catch (IOException e) {
                                                 e.printStackTrace();
                                             }
@@ -215,7 +212,7 @@ public class DeleteDevice extends AppCompatActivity implements View.OnClickListe
                         }else{
                             Toast.makeText(getApplicationContext(),"Failed to delete this device",Toast.LENGTH_LONG).show();
                             try {
-                                Files.write(pk, new File(getFilesDir(),PKFN));
+                                com.google.common.io.Files.write(pk, new File(getFilesDir(),PKFN));
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
@@ -230,19 +227,16 @@ public class DeleteDevice extends AppCompatActivity implements View.OnClickListe
         FirebaseFirestore.getInstance().collection("users")
                 .document(uid).collection("devices")
                 .document(android_id).delete()
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if(task.isSuccessful()){
-                            Intent intent = new Intent(DeleteDevice.this,DeviceListBuilder.class);
-                            intent.putExtra("uid",uid);
-                            intent.putExtra("pk",pk);
-                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK |  Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                            startActivity(intent);
-                            finish();
-                        }else{
-                            Toast.makeText(getApplicationContext(),"Failed to remove device",Toast.LENGTH_LONG).show();
-                        }
+                .addOnCompleteListener(task -> {
+                    if(task.isSuccessful()){
+                        Intent intent = new Intent(DeleteDevice.this,DeviceListBuilder.class);
+                        intent.putExtra("uid",uid);
+                        intent.putExtra("pk",pk);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK |  Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+                        finish();
+                    }else{
+                        Toast.makeText(getApplicationContext(),"Failed to remove device",Toast.LENGTH_LONG).show();
                     }
                 });
     }

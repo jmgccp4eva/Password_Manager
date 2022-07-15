@@ -3,15 +3,18 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
+    android:scrollbars=""
     android:layout_height="match_parent"
     tools:context=".SignIn">
 
 
     <EditText
         android:id="@+id/etSIEmail"
-        android:layout_width="250dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginStart="75dp"
         android:layout_marginTop="50dp"
+        android:layout_marginEnd="75dp"
         android:hint="@string/email"
         android:inputType="textEmailAddress"
         android:paddingStart="10dp"
@@ -24,16 +27,18 @@
 
     <EditText
         android:id="@+id/etSIPass"
-        android:layout_width="250dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginStart="75dp"
         android:layout_marginTop="50dp"
+        android:layout_marginEnd="75dp"
+        android:drawableEnd="@drawable/ic_baseline_visibility_off_24"
         android:hint="@string/password"
         android:inputType="textPassword"
+        android:longClickable="false"
         android:paddingStart="10sp"
         android:textColor="@color/green"
         android:textSize="20sp"
-        android:drawableEnd="@drawable/ic_baseline_visibility_off_24"
-        android:longClickable="false"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/etSIEmail"
@@ -41,9 +46,11 @@
 
     <Button
         android:id="@+id/btnSignIn"
-        android:layout_width="250dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginStart="75dp"
         android:layout_marginTop="50dp"
+        android:layout_marginEnd="75dp"
         android:backgroundTint="@color/green"
         android:text="@string/signIn"
         android:textSize="20sp"

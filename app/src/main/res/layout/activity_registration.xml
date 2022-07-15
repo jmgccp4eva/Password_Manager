@@ -24,11 +24,12 @@
 
     <EditText
         android:id="@+id/etRegEmail"
-        android:layout_width="match_parent"
+        android:layout_width="250dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="75dp"
         android:layout_marginTop="50dp"
         android:layout_marginEnd="75dp"
+        android:autofillHints=""
         android:hint="@string/email"
         android:inputType="textEmailAddress"
         android:paddingStart="10sp"
@@ -37,8 +38,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/etRegName"
-        tools:ignore="RtlSymmetry"
-        android:autofillHints="" />
+        tools:ignore="RtlSymmetry" />
 
     <EditText
         android:id="@+id/etRegPass"
